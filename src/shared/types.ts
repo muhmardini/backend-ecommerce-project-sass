@@ -1,7 +1,7 @@
 export interface AppResponse<T> {
     success: boolean,
     message: string,
-    data: T
+    data?: T
 }
 
 export interface PaginatedResponse<T> {

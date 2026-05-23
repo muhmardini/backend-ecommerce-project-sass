@@ -1,0 +1,259 @@
+
+generator client {
+    provider = "prisma-client"
+    output = "../src/generated/prisma"
+}
+
+datasource db{
+    provider = "postgresql"
+}
+
+model User {
+    id String @id @default(cuid())
+    name String
+    email String @unique
+    password String
+    role Role @default(User)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    profile Profile?
+    orders Order[]
+    likedProducts LikeProduct[]
+    business BusinessMember[]
+    points PointRedemption[]
+
+    @@map("user")
+}
+
+model Profile {
+    id String @id @default(cuid())
+    fullname String
+    job String?
+    avatar String?
+    location String?
+    birthday DateTime
+    gender Gender?
+    preferredLanguage String @default("english")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String @unique
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("profile")
+}
+
+model Business{
+    id String @id @default(cuid())
+    name String @unique
+    description String?
+    location String?
+    links String?
+    verified Boolean @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    products Product[]
+    orders Order[]
+    businessTeam BusinessMember[]
+    redemptionType Redemption[]
+    redemptionPoints PointRedemption[]
+
+    @@map("business")
+}
+
+model Product {
+    id String @id @default(cuid())
+    title String
+    description String
+    price Float
+    image String
+    size Int?
+    colors String?
+    stockCount Int?
+    status ProductStatus @default(available)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    businessId String
+    business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+    likedBy LikeProduct[]
+    categories ProductCategory[]
+    orders OrderItem[]
+
+    @@map("products")
+}
+
+model ProductCategory {
+    id String @id @default(cuid())
+    category Categories
+
+    productId String
+    product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    @@map("productCategories")
+
+    @@unique([productId, category])
+}
+
+model Order {
+    id String @id @default(cuid())
+    totalCost Float
+    status OrderStatus @default(Pending)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    businessId String
+    business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+    items OrderItem[]
+
+    @@map("orders")
+}
+
+// join tables for relations
+
+model LikeProduct {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    productId String
+    products Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    userId String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("likedProducts")
+    @@unique([productId, userId])
+}
+
+model BusinessMember {
+    id String @id @default(cuid())
+    role BusinessMemberRole
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    businessId String
+    business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+    @@map("businessMember")
+    @@unique([userId, businessId])
+}
+
+model Redemption {
+    id String @id @default(cuid())
+    redemption RedemptionType
+    
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    businessId String
+    business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+    @@map("redemption")
+}
+
+model PointRedemption {
+    id String @id @default(cuid())
+    points Int
+    
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    businessId String
+    business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+    @@map("pointRedemption")
+    @@unique([userId, businessId])
+}
+
+model OrderItem {
+    id String @id @default(cuid())
+    quantity Int
+    price Float
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    orderId String
+    order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+    productId String
+    product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    @@map("orderItem")
+    @@unique([orderId, productId])
+}
+
+// enums
+
+enum Role {
+    Admin
+    User
+}
+
+enum Gender {
+    Male
+    Female
+}
+
+enum Categories {
+    Electronics
+    Fashion
+    HomsAndLiving
+    BeautyAndPersonalCare
+    SportsAndOutdoors
+    Automotive
+    BooksAndMedia
+    ToysAndGames
+    GroceriesAndFood
+    HealthAndWellness
+    PetSupplies
+    OfficeAndStationary
+}
+
+enum OrderStatus {
+    Pending
+    Cancelled
+    Rejected
+    Confirmed
+    Prepared
+    Shipped
+    Delivered
+}
+
+enum ProductStatus {
+    available
+    sold
+    outOfStock
+    hided
+}
+
+enum BusinessMemberRole {
+    Owner
+    CoWorker
+}
+
+enum RedemptionType {
+    freeDelivery
+    none
+}
