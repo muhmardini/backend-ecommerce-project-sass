@@ -1,42 +1,23 @@
 import { env } from "#shared/env";
-import jwt, { SignOptions } from "jsonwebtoken";
 import { Errors } from "#shared/error";
+import { AuthUser } from "#types/express.d";
+import { createUser, findUser } from "./auth.repository";
+import { RegisterInput } from "./auth.schemas";
+import bcrypt from "bcrypt";
 
-interface TokenPayload {
-  id: number;
-  role: "ADMIN" | "USER";
-}
+export const registerUser = async (input: RegisterInput): Promise<AuthUser> => {
+  const existingUser = await findUser(input);
 
-// generate token
-
-export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
-    expiresIn: env.JWT_ACCESS_EXPIRES_IN as SignOptions["expiresIn"], // 15min
-  });
-};
-
-export const generateRefreshToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN as SignOptions["expiresIn"],
-  });
-};
-
-// verify tokens
-
-export const verifyAccessToken = (token: string): TokenPayload => {
-  try {
-    const payload = jwt.verify(token, env.JWT_ACCESS_SECRET);
-    return payload as TokenPayload;
-  } catch (error) {
-    throw Errors.Unauthorized("Invalid or expired access Token");
+  if (existingUser) {
+    throw Errors.Conflict("User already exist");
   }
-};
 
-export const verifyRefreshToken = (token: string): TokenPayload => {
-  try {
-    const payload = jwt.verify(token, env.JWT_REFRESH_SECRET);
-    return payload as TokenPayload;
-  } catch (error) {
-    throw Errors.Unauthorized("Invalid or expired refresh Token");
-  }
+  const hashedPassword = await bcrypt.hash(
+    input.password,
+    env.BCRYPT_SALT_ROUNDS,
+  );
+
+  const user = await createUser(input, hashedPassword);
+
+  return user as AuthUser;
 };
