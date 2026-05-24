@@ -1,6 +1,8 @@
+import { authMiddleware } from '#features/auth/auth.middleware';
 import { timeStamp } from 'console';
 import express, { NextFunction } from 'express'
 import { success } from 'zod';
+import authRoutes from '#features/auth/auth.routes';
 
 export const app = express();
 
@@ -14,6 +16,7 @@ app.get('/health', (_req, res) => {
     })
 })
 
+app.use("/auth", authMiddleware, authRoutes)
 
 
 app.use((_req,res) => {

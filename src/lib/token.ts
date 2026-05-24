@@ -2,9 +2,9 @@ import { env } from "#shared/env";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { Errors } from "#shared/error";
 
-interface TokenPayload {
+export interface TokenPayload {
   id: number;
-  role: "ADMIN" | "USER";
+  role: "Admin" | "User";
 }
 
 // generate token

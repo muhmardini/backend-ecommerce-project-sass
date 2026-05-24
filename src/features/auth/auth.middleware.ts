@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "#lib/token";
 import { catchAsync } from "#shared/catchAsync";
 
-const authMiddleware = catchAsync(
+export const authMiddleware = catchAsync(
   async (req: Request, _res: Response, next: NextFunction) => {
     const authorization = req.headers.authorization;
     let token;

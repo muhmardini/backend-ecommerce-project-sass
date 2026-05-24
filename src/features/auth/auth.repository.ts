@@ -1,8 +1,9 @@
 import { prisma } from "#lib/prisma";
-import { RegisterInput } from "./auth.schemas";
+import { RegisterInput, LoginInput } from "./auth.schemas";
 
+type AuthInput = RegisterInput | LoginInput
 
-export const findUser = (input: RegisterInput) => {
+export const findUser = (input: AuthInput) => {
     return prisma.user.findUnique({
         where: {email: input.email}
     })

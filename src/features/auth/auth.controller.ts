@@ -1,7 +1,7 @@
 import { catchAsync } from "#shared/catchAsync";
 import { Request, Response } from "express";
 import { LoginSchema, RegisterSchema } from "./auth.schemas";
-import { registerUser } from "./auth.service";
+import { loginUser, registerUser } from "./auth.service";
 import { setRefreshCookie } from "./auth.cookie";
 
 
@@ -37,4 +37,4 @@ const login = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
-export {register,}
+export {register,login}
