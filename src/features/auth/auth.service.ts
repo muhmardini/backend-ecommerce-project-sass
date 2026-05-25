@@ -11,6 +11,7 @@ import {
 } from "#lib/token";
 import bcrypt from "bcrypt";
 import { access } from "node:fs";
+import { log } from "node:console";
 
 export const registerUser = async (input: RegisterInput): Promise<AuthUser> => {
   const existingUser = await findUser(input);
