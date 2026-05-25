@@ -24,5 +24,7 @@ export const env = {
     JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
 
     // bcrypt
-    BCRYPT_SALT_ROUNDS: process.env.BCRYPT_SALT_ROUNDS || 12
+    BCRYPT_SALT_ROUNDS: process.env.BCRYPT_SALT_ROUNDS || 12,
+    // dummy hash
+    DUMMY_HASH: process.env.DUMMY_HASH || "31$31%^#@*!@$31()mardiniInvalidDummyHashToPreventAttackersFromKnowingWhatEmailsAreValid"
 } as const

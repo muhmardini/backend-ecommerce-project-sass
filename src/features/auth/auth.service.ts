@@ -1,42 +1,68 @@
 import { env } from "#shared/env";
-import jwt, { SignOptions } from "jsonwebtoken";
 import { Errors } from "#shared/error";
+import { AuthUser } from "#types/express.d";
+import { createUser, findUser, findUserById } from "./auth.repository";
+import { LoginInput, RegisterInput } from "./auth.schemas";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  TokenPayload,
+  verifyRefreshToken,
+} from "#lib/token";
+import bcrypt from "bcrypt";
+import { access } from "node:fs";
 
-interface TokenPayload {
-  id: number;
-  role: "ADMIN" | "USER";
-}
+export const registerUser = async (input: RegisterInput): Promise<AuthUser> => {
+  const existingUser = await findUser(input);
 
-// generate token
-
-export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
-    expiresIn: env.JWT_ACCESS_EXPIRES_IN as SignOptions["expiresIn"], // 15min
-  });
-};
-
-export const generateRefreshToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN as SignOptions["expiresIn"],
-  });
-};
-
-// verify tokens
-
-export const verifyAccessToken = (token: string): TokenPayload => {
-  try {
-    const payload = jwt.verify(token, env.JWT_ACCESS_SECRET);
-    return payload as TokenPayload;
-  } catch (error) {
-    throw Errors.Unauthorized("Invalid or expired access Token");
+  if (existingUser) {
+    throw Errors.Conflict("User already exist");
   }
+
+  const hashedPassword = await bcrypt.hash(
+    input.password,
+    env.BCRYPT_SALT_ROUNDS,
+  );
+
+  const user = await createUser(input, hashedPassword);
+
+  return user as AuthUser;
 };
 
-export const verifyRefreshToken = (token: string): TokenPayload => {
-  try {
-    const payload = jwt.verify(token, env.JWT_REFRESH_SECRET);
-    return payload as TokenPayload;
-  } catch (error) {
-    throw Errors.Unauthorized("Invalid or expired refresh Token");
+export const loginUser = async (
+  input: LoginInput,
+): Promise<{ accessToken: string; refreshToken: string; user: AuthUser }> => {
+  const user = await findUser(input);
+
+  const isValidPassword = await bcrypt.compare(
+    input?.password,
+    user?.password ?? env.DUMMY_HASH,
+  );
+
+  if (!user || !isValidPassword) {
+    throw Errors.Unauthorized("Invalid email or password");
   }
+
+  const tokenPayload: TokenPayload = { id: +user.id, role: user.role };
+
+  return {
+    accessToken: generateAccessToken(tokenPayload),
+    refreshToken: generateRefreshToken(tokenPayload),
+    user: { id: user.id, role: user.role },
+  };
+};
+
+export const refreshAccessToken = async (
+  refreshToken: string,
+): Promise<{ accessToken: string }> => {
+  const payload = verifyRefreshToken(refreshToken);
+  const user = await findUserById(payload.id.toString());
+
+  if (!user) {
+    throw Errors.NotFound("User no longer exist");
+  }
+
+  return {
+    accessToken: generateAccessToken({ id: +user.id, role: user.role }),
+  };
 };

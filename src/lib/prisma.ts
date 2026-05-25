@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client/extension";
+import { PrismaClient } from "#generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { env } from "#shared/env";
-import { log } from "node:console";
 
 const createPrismaClient = (): PrismaClient => {
   const adapter = new PrismaNeon({
