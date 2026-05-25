@@ -1,10 +1,16 @@
 import { env } from "#shared/env";
 import { Errors } from "#shared/error";
 import { AuthUser } from "#types/express.d";
-import { createUser, findUser } from "./auth.repository";
+import { createUser, findUser, findUserById } from "./auth.repository";
 import { LoginInput, RegisterInput } from "./auth.schemas";
-import { generateAccessToken, generateRefreshToken, TokenPayload } from "#lib/token";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  TokenPayload,
+  verifyRefreshToken,
+} from "#lib/token";
 import bcrypt from "bcrypt";
+import { access } from "node:fs";
 
 export const registerUser = async (input: RegisterInput): Promise<AuthUser> => {
   const existingUser = await findUser(input);
@@ -42,6 +48,21 @@ export const loginUser = async (
   return {
     accessToken: generateAccessToken(tokenPayload),
     refreshToken: generateRefreshToken(tokenPayload),
-    user: {id: user.id, role: user.role}
+    user: { id: user.id, role: user.role },
+  };
+};
+
+export const refreshAccessToken = async (
+  refreshToken: string,
+): Promise<{ accessToken: string }> => {
+  const payload = verifyRefreshToken(refreshToken);
+  const user = await findUserById(payload.id.toString());
+
+  if (!user) {
+    throw Errors.NotFound("User no longer exist");
+  }
+
+  return {
+    accessToken: generateAccessToken({ id: +user.id, role: user.role }),
   };
 };
