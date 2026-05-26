@@ -52,7 +52,8 @@ model Business{
     name String @unique
     description String?
     location String?
-    links String?
+    links String[]
+    slug String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
