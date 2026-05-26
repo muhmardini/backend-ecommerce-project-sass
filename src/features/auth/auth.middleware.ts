@@ -3,9 +3,11 @@ import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "#lib/token";
 import { catchAsync } from "#shared/catchAsync";
 import { AuthUser } from "#types/express.d";
+import { authRepo } from "./auth.repository";
 
 export const authenticate = catchAsync(
   async (req: Request, _res: Response, next: NextFunction) => {
+    
     const authorization = req.headers.authorization;
     let token;
     if (authorization && authorization?.startsWith("Bearer")) {
@@ -19,6 +21,11 @@ export const authenticate = catchAsync(
       id: payload.id.toString(),
       role: payload.role,
     };
+    // check if the user exist cause if deleting a user or a profile from DB the token become useless
+    const user = authRepo.findUserById(payload.id.toString())
+    if(!user){
+      throw Errors.NotFound("User no longer exist")
+    }
     next();
   },
 );
