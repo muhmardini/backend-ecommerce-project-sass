@@ -13,6 +13,7 @@ model User {
     name String
     email String @unique
     password String
+    verified Boolean @default(false)
     role Role @default(User)
 
     createdAt DateTime @default(now())
@@ -33,7 +34,7 @@ model Profile {
     job String?
     avatar String?
     location String?
-    birthday DateTime
+    birthday DateTime?
     gender Gender?
     preferredLanguage String @default("english")
 
@@ -52,7 +53,6 @@ model Business{
     description String?
     location String?
     links String?
-    verified Boolean @default(false)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

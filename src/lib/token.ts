@@ -3,7 +3,7 @@ import jwt, { SignOptions } from "jsonwebtoken";
 import { Errors } from "#shared/error";
 
 export interface TokenPayload {
-  id: number;
+  id: string;
   role: "Admin" | "User";
 }
 
