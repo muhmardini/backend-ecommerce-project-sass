@@ -1,5 +1,5 @@
 import { prisma } from "#lib/prisma";
-import { BusinessInput } from "./business.schema";
+import { BusinessInput, EditBusinessInput } from "./business.schema";
 
 
 class BusinessRepository {
@@ -25,6 +25,12 @@ class BusinessRepository {
                     }
                 }
             },
+        })
+    }
+    editBusiness = (input: EditBusinessInput) => {
+        return prisma.business.update({
+            where: {name: input.name},
+            data: input
         })
     }
 }

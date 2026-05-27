@@ -1,7 +1,7 @@
 import { Business } from "#generated/prisma/client";
 import { Errors } from "#shared/error";
 import { businessRepo } from "./business.repository";
-import { BusinessInput, BusinessSchema } from "./business.schema";
+import { BusinessInput, EditBusinessInput, NewBusinessSchema } from "./business.schema";
 import slugify from 'slugify'
 
 
@@ -23,6 +23,10 @@ class BusinessService {
     getBusinesses = async (id: string) => {
         const businesses = await businessRepo.getAllBusinesses(id);
         return businesses
+    }
+    editingBusiness = async (input: EditBusinessInput):Promise<Business> => {
+        const editedBusiness = await businessRepo.editBusiness(input)
+        return editedBusiness
     }
 }
 

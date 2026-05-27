@@ -1,6 +1,6 @@
 import { authenticate } from '#features/auth/auth.middleware';
 import express from 'express'
-import { createBusiness, getBusiness } from './business.controller';
+import { createBusiness, editBusiness, getBusiness } from './business.controller';
 
 const router = express.Router();
 
