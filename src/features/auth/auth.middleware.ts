@@ -22,7 +22,7 @@ export const authenticate = catchAsync(
       role: payload.role,
     };
     // check if the user exist cause if deleting a user or a profile from DB the token become useless
-    const user = authRepo.findUserById(payload.id.toString())
+    const user = await authRepo.findUserById(payload.id.toString())
     if(!user){
       throw Errors.NotFound("User no longer exist")
     }

@@ -8,7 +8,7 @@ import { EditProfileSchema } from "./user.schema.ts";
 
 const myProfile = catchAsync(async (req: Request, res: Response) => {
   const user = req.user!;
-  const profile = userServices.getProfile(user.id);
+  const profile = await userServices.getProfile(user.id);
   const response: AppResponse<typeof profile> = {
     success: true,
     data: profile,
@@ -20,7 +20,7 @@ const editProfile = catchAsync(async (req: Request, res: Response) => {
   const input = EditProfileSchema.parse(req.body);
   const user = req.user!;
 
-  const editedProfile = userServices.changeProfile(input, user.id);
+  const editedProfile = await userServices.changeProfile(input, user.id);
   const response: AppResponse<typeof editedProfile> = {
     success: true,
     data: editedProfile,
@@ -31,7 +31,7 @@ const editProfile = catchAsync(async (req: Request, res: Response) => {
 
 const deleteProfile = catchAsync(async (req: Request, res: Response) => {
   const user = req.user!;
-  userServices.deleteProfile(user.id);
+  await userServices.deleteProfile(user.id);
   const response: AppResponse<void> = {
     success: true,
     message: "User & profile has been deleted",

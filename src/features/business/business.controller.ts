@@ -90,7 +90,7 @@ const getBusiness = catchAsync(async (req: Request, res: Response) => {
 
 const editBusiness = catchAsync(async (req: Request, res: Response) => {
   const input = EditBusinessSchema.parse(req.body);
-  const editedBusiness = businessService.editingBusiness(input);
+  const editedBusiness = await businessService.editingBusiness(input);
   const response: AppResponse<typeof editedBusiness> = {
     success: true,
     data: editedBusiness,

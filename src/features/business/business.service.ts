@@ -50,7 +50,7 @@ class BusinessService {
   getTotalBusinessCount = async(
     input: BusinessInputs.GetAllBusinessesInput
   ) => {
-    const count = businessRepo.getBusinessesCount(input)
+    const count = await businessRepo.getBusinessesCount(input)
     return count
   }
   getBusiness = async (
@@ -65,7 +65,7 @@ class BusinessService {
   editingBusiness = async (
     input: BusinessInputs.EditBusiness,
   ): Promise<Business> => {
-    const business = businessRepo.findBusinessByName(input.name);
+    const business = await businessRepo.findBusinessByName(input.name);
     if (!business) {
       throw Errors.NotFound("Business does not exist");
     }
@@ -75,11 +75,11 @@ class BusinessService {
   deleteBusiness = async (
     input: BusinessInputs.DeleteBusiness,
   ): Promise<void> => {
-    const business = businessRepo.findBusinessBySlug(input.slug);
+    const business = await businessRepo.findBusinessBySlug(input.slug);
     if (!business) {
       throw Errors.NotFound("Business is no longer exist");
     }
-    const deletedBusiness = businessRepo.deleteBusiness(input);
+    const deletedBusiness = await businessRepo.deleteBusiness(input);
   };
 }
 
