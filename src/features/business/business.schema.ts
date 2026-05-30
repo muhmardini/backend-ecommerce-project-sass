@@ -8,33 +8,29 @@ export const NewBusinessSchema = z.object({
   slug: z.string().slugify().trim(),
 });
 
-export const GetBusinessSchema = z.object({
-  slug: z.string().trim(),
-});
+export const EditBusinessSchema = NewBusinessSchema
 
-export const DeleteBusinessSchema = z.object({
-  slug: z.string().trim(),
-});
+export const GetBusinessSchema = NewBusinessSchema.pick({
+  slug: true,
+})
 
-export const EditBusinessSchema = z.object({
-  name: z.string().trim(),
-  description: z.string().max(255, "Description is too long").optional(),
-  location: z.string().max(255, "Location is too long").trim().optional(),
-  links: z.array(z.string()).optional(),
-  slug: z.string().slugify().optional(),
-});
+export const DeleteBusinessSchema = GetBusinessSchema
 
-export const GetBusinessesSchema = z.object({
+export const GetAllBusinessesSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().optional().default(20)
+})
+
+export const GetPaginateBusinessSchema = GetAllBusinessesSchema;
+
+export const GetUserBusinessesSchema = z.object({
   role: z.enum(["Owner", "CoWorker"]),
 });
 
-export const GetPaginateBusinessSchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
-});
 
 export namespace BusinessInputs {
-  export type GetBusinesses = z.infer<typeof GetBusinessesSchema>;
+  export type GetAllBusinessesInput = z.infer<typeof GetAllBusinessesSchema>
+  export type GetBusinesses = z.infer<typeof GetUserBusinessesSchema>;
   export type GetPaginateBusiness = z.infer<
     typeof GetPaginateBusinessSchema
   >;

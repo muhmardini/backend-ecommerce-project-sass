@@ -4,7 +4,10 @@ import { LoginSchema, RegisterSchema } from "./auth.schemas";
 import { authServices } from "./auth.service";
 import { setRefreshCookie } from "./auth.cookie";
 import { error } from "node:console";
-import { Errors } from "#shared/error";
+import { AppError, Errors } from "#shared/error";
+import { AppResponse } from "#shared/types";
+import { AuthUser } from "#types/express.d";
+import { resolve } from "node:dns";
 
 const register = catchAsync(async (req: Request, res: Response) => {
   const input = RegisterSchema.parse(req.body);
@@ -24,15 +27,15 @@ const login = catchAsync(async (req: Request, res: Response) => {
   const { accessToken, refreshToken, user } = await authServices.loginUser(input);
 
   setRefreshCookie(res, refreshToken);
-
-  res.status(200).json({
+  const response: AppResponse<{accessToken: string, user: AuthUser}> = {
     success: true,
     data: {
       accessToken,
       user,
     },
     message: "Login successfully",
-  });
+  }
+  res.status(200).json(response);
 });
 
 export const refresh = catchAsync(async (req: Request, res: Response) => {
@@ -43,10 +46,11 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
   }
 
   const { accessToken } = await authServices.refreshAccessToken(refreshToken);
-  res.status(200).json({
+  const response: AppResponse<{accessToken: string}> = {
     success: true,
     data: { accessToken },
-  });
+  }
+  res.status(200).json(response);
 });
 
 export const logout = catchAsync(async (req: Request, res: Response) => {

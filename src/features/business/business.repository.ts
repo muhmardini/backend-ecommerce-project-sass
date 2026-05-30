@@ -21,8 +21,11 @@ class BusinessRepository {
       },
     });
   };
-  getAllBusinesses = () => {
+  getAllBusinesses = (queries: BusinessInputs.GetAllBusinessesInput) => {
+    const skip = (queries.page - 1) * queries.limit;
     return prisma.business.findMany({
+      skip,
+      take: queries.limit,
       select: {
         name: true,
         description: true,
@@ -67,15 +70,18 @@ class BusinessRepository {
       },
     });
   };
-  getBusinessesCount = async (
-    id: string,
+  getBusinessesCount = async(input: BusinessInputs.GetAllBusinessesInput) => {
+    return await prisma.business.count();
+  }
+  getUserBusinessesCount = async (
     input: BusinessInputs.GetBusinesses,
+    id: string,
   ) => {
     return await prisma.business.count({
       where: {
         businessTeam: {
           some: {
-            userId: id,
+            ...(id && { userId: id }),
             ...(input.role && { role: input.role }),
           },
         },
