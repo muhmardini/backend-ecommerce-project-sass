@@ -1,4 +1,4 @@
-import { Profile, User } from "#generated/prisma/client";
+import { Business, Profile, User } from "#generated/prisma/client";
 import { prisma } from "#lib/prisma";
 import { EditProfileInput } from "./user.schema";
 
@@ -27,6 +27,8 @@ class UserRepo {
       });
     });
   };
+
+ 
 }
 
 export const userRepo = new UserRepo();

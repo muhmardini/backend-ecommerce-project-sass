@@ -6,7 +6,7 @@ export interface AppResponse<T> {
 
 export interface PaginatedResponse<T> {
     success: boolean,
-    message: string,
+    message?: string,
     data: T[],
     pagination: {
         page: number,

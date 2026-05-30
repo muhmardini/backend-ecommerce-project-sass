@@ -13,4 +13,5 @@ export const EditProfileSchema = z.object({
     (data) => Object.values(data).some((value) => value !== undefined)
 )
 
+
 export type EditProfileInput = z.infer<typeof EditProfileSchema>

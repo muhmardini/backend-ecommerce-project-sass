@@ -1,33 +1,66 @@
 import { Business } from "#generated/prisma/client";
 import { Errors } from "#shared/error";
 import { businessRepo } from "./business.repository";
-import { BusinessInput, EditBusinessInput, NewBusinessSchema } from "./business.schema";
-import slugify from 'slugify'
-
-
+import { BusinessInputs } from "./business.schema";
+import slugify from "slugify";
 
 class BusinessService {
-    newBusiness = async (input: BusinessInput): Promise<Business> => {
-        const businessExist = await businessRepo.findBusiness(input.name)
+  newBusiness = async (
+    input: BusinessInputs.CreateBusiness,
+  ): Promise<Business> => {
+    const businessExist = await businessRepo.findBusinessByName(input.name);
 
-        if(businessExist){
-            throw Errors.Conflict("A business with a same name already exist")
-        }
-        input.slug = slugify(input.name,{
-            lower: true,
-            strict: true
-        })
-        const newBusiness = await businessRepo.createBusiness(input)
-        return newBusiness
+    if (businessExist) {
+      throw Errors.Conflict("A business with a same name already exist");
     }
-    getBusinesses = async (id: string) => {
-        const businesses = await businessRepo.getAllBusinesses(id);
-        return businesses
+    input.slug = slugify(input.name, {
+      lower: true,
+      strict: true,
+    });
+    const newBusiness = await businessRepo.createBusiness(input);
+    return newBusiness;
+  };
+  getBusinesses = async (): Promise<
+    Pick<Business, "name" | "description" | "location" | "links">[]
+  > => {
+    const businesses = await businessRepo.getAllBusinesses();
+    return businesses;
+  };
+  getMyBusinesses = async (id: string, input: BusinessInputs.GetBusinesses,queries: BusinessInputs.GetPaginateBusiness): Promise<Pick<Business, "name" | "description" | "location" | "links" | "createdAt">[]> =>{
+          const businesses = await businessRepo.getBusinesses(id, input, queries)
+          return businesses
+      }
+      getTotalBusinesses = async (id:string, input: BusinessInputs.GetBusinesses):Promise<number> => {
+          return await businessRepo.getBusinessesCount(id, input);
+      }
+  getBusiness = async (
+    input: BusinessInputs.GetBusiness,
+  ): Promise<Business> => {
+    const business = await businessRepo.getBusiness(input);
+    if (!business) {
+      throw Errors.NotFound("Business not found");
     }
-    editingBusiness = async (input: EditBusinessInput):Promise<Business> => {
-        const editedBusiness = await businessRepo.editBusiness(input)
-        return editedBusiness
+    return business;
+  };
+  editingBusiness = async (
+    input: BusinessInputs.EditBusiness,
+  ): Promise<Business> => {
+    const business = businessRepo.findBusinessByName(input.name);
+    if (!business) {
+      throw Errors.NotFound("Business does not exist");
     }
+    const editedBusiness = await businessRepo.editBusiness(input);
+    return editedBusiness;
+  };
+  deleteBusiness = async (
+    input: BusinessInputs.DeleteBusiness,
+  ): Promise<void> => {
+    const business = businessRepo.findBusinessBySlug(input.slug);
+    if (!business) {
+      throw Errors.NotFound("Business is no longer exist");
+    }
+    const deletedBusiness = businessRepo.deleteBusiness(input);
+  };
 }
 
 export const businessService = new BusinessService();
