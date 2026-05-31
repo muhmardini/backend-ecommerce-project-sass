@@ -13,10 +13,6 @@ class BusinessService {
     if (businessExist) {
       throw Errors.Conflict("A business with a same name already exist");
     }
-    input.slug = slugify(input.name, {
-      lower: true,
-      strict: true,
-    });
     const newBusiness = await businessRepo.createBusiness(input);
     return newBusiness;
   };
@@ -75,7 +71,7 @@ class BusinessService {
   deleteBusiness = async (
     input: BusinessInputs.DeleteBusiness,
   ): Promise<void> => {
-    const business = await businessRepo.findBusinessBySlug(input.slug);
+    const business = await businessRepo.findBusinessByName(input.name);
     if (!business) {
       throw Errors.NotFound("Business is no longer exist");
     }

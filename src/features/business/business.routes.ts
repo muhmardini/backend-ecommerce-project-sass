@@ -6,17 +6,17 @@ const router = express.Router();
 
 
 // Core Endpoints
-router.post('/business', authenticate, createBusiness);
+router.post('/', authenticate, createBusiness);
 
-router.get('/business/:slug', getBusiness);
+router.get('/:slug', getBusiness);
 
-router.get('/business', getAllBusiness)
+router.get('/', getAllBusiness)
 
 router.get('/my-businesses', authenticate, myBusinesses)
 
-router.patch('/business', authenticate, editBusiness);
+router.patch('/', authenticate, editBusiness);
 
-router.delete('/business/:slug', authenticate, deleteBusiness);
+router.delete('/:slug', authenticate, deleteBusiness);
 
 // manage members endpoints
 router.post('/business')

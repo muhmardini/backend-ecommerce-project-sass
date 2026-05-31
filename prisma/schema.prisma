@@ -220,7 +220,7 @@ enum Gender {
 enum Categories {
     Electronics
     Fashion
-    HomsAndLiving
+    HomeAndLiving
     BeautyAndPersonalCare
     SportsAndOutdoors
     Automotive
@@ -246,7 +246,7 @@ enum ProductStatus {
     available
     sold
     outOfStock
-    hided
+    hidden
 }
 
 enum BusinessMemberRole {

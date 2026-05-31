@@ -3,7 +3,7 @@ import "dotenv/config"
 const requireEnv = (name: string): string => {
     const value = process.env[name]
     if(!value){
-        throw new Error(`Missing Required environment Variable: ${name} \n Make sure it is set in your .env file ore environment.`)
+        throw new Error(`Missing Required environment Variable: ${name} \n Make sure it is set in your .env file or environment.`)
     }
     return value
 }

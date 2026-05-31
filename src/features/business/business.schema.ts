@@ -5,14 +5,11 @@ export const NewBusinessSchema = z.object({
   description: z.string().max(255, "Description is too long").optional(),
   location: z.string().max(255, "Location is too long").trim().optional(),
   links: z.array(z.string()).optional(),
-  slug: z.string().slugify().trim(),
 });
 
 export const EditBusinessSchema = NewBusinessSchema
 
-export const GetBusinessSchema = NewBusinessSchema.pick({
-  slug: true,
-})
+export const GetBusinessSchema = NewBusinessSchema
 
 export const DeleteBusinessSchema = GetBusinessSchema
 
@@ -24,7 +21,7 @@ export const GetAllBusinessesSchema = z.object({
 export const GetPaginateBusinessSchema = GetAllBusinessesSchema;
 
 export const GetUserBusinessesSchema = z.object({
-  role: z.enum(["Owner", "CoWorker"]),
+  role: z.enum(["Owner", "CoWorker"]).optional(),
 });
 
 

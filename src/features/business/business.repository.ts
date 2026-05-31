@@ -1,5 +1,6 @@
 import { Business } from "#generated/prisma/client";
 import { prisma } from "#lib/prisma";
+import slugify from "slugify";
 import { BusinessInputs } from "./business.schema";
 
 class BusinessRepository {
@@ -17,6 +18,10 @@ class BusinessRepository {
     return prisma.business.create({
       data: {
         ...input,
+        slug: slugify(input.name, {
+          lower: true,
+          strict: true,
+        }),
         links: input.links ?? [],
       },
     });
@@ -36,7 +41,7 @@ class BusinessRepository {
   };
   getBusiness = (input: BusinessInputs.GetBusiness) => {
     return prisma.business.findUnique({
-      where: { slug: input.slug },
+      where: { name: input.name },
     });
   };
   getBusinesses = async (
@@ -70,9 +75,9 @@ class BusinessRepository {
       },
     });
   };
-  getBusinessesCount = async(input: BusinessInputs.GetAllBusinessesInput) => {
+  getBusinessesCount = async (input: BusinessInputs.GetAllBusinessesInput) => {
     return await prisma.business.count();
-  }
+  };
   getUserBusinessesCount = async (
     input: BusinessInputs.GetBusinesses,
     id: string,
@@ -96,7 +101,7 @@ class BusinessRepository {
   };
   deleteBusiness = async (input: BusinessInputs.DeleteBusiness) => {
     await prisma.business.delete({
-      where: { slug: input.slug },
+      where: { name: input.name },
     });
   };
 }

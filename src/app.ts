@@ -1,7 +1,4 @@
-import { authenticate } from "#features/auth/auth.middleware";
-import { timeStamp } from "console";
-import express, { NextFunction } from "express";
-import { success } from "zod";
+import express from "express";
 import authRoutes from "#features/auth/auth.routes";
 import businessRoutes from "#features/business/business.routes"
 import userRoutes from "#features/users/users.routes"

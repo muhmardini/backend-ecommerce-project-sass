@@ -2,7 +2,7 @@
 export {}
 export interface AuthUser{
     id: string,
-    role: string
+    role: "Admin" | "User"
 }
 
 declare global {

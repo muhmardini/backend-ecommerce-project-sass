@@ -1,9 +1,7 @@
 import { catchAsync } from "#shared/catchAsync";
-import { Errors } from "#shared/error";
 import { Request, Response } from "express";
-import { error } from "node:console";
 import { userServices } from "./user.service";
-import { AppResponse, PaginatedResponse } from "#shared/types";
+import { AppResponse } from "#shared/types";
 import { EditProfileSchema } from "./user.schema.ts";
 
 const myProfile = catchAsync(async (req: Request, res: Response) => {
@@ -13,7 +11,7 @@ const myProfile = catchAsync(async (req: Request, res: Response) => {
     success: true,
     data: profile,
   };
-  res.status(201).json(response);
+  res.status(200).json(response);
 });
 
 const editProfile = catchAsync(async (req: Request, res: Response) => {

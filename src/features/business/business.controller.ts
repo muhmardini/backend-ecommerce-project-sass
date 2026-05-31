@@ -95,7 +95,7 @@ const editBusiness = catchAsync(async (req: Request, res: Response) => {
     success: true,
     data: editedBusiness,
   };
-  res.status(201).json(response);
+  res.status(200).json(response);
 });
 
 const deleteBusiness = catchAsync(async (req: Request, res: Response) => {
@@ -105,7 +105,7 @@ const deleteBusiness = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: "Business deleted successfully",
   };
-  res.status(204).json(response);
+  res.status(204).send(response);
 });
 
 export {

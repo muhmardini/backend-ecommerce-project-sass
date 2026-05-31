@@ -1,4 +1,4 @@
-import {email, object, z} from 'zod'
+import {z} from 'zod'
 
 export const EditProfileSchema = z.object({
     name: z.string().max(100,"Name too long").trim().optional(),
