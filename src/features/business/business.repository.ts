@@ -88,14 +88,14 @@ class BusinessRepository {
       },
     });
   };
-  editBusiness = (input: BusinessInputs.EditBusiness) => {
-    return prisma.business.update({
+  editBusiness = async (input: BusinessInputs.EditBusiness) => {
+    return await prisma.business.update({
       where: { name: input.name },
       data: input,
     });
   };
-  deleteBusiness = (input: BusinessInputs.DeleteBusiness) => {
-    prisma.business.delete({
+  deleteBusiness = async (input: BusinessInputs.DeleteBusiness) => {
+    await prisma.business.delete({
       where: { slug: input.slug },
     });
   };
