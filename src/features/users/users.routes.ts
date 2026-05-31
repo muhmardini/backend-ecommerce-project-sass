@@ -9,3 +9,5 @@ route.get("/me", authenticate, myProfile);
 route.patch("/profile", authenticate, editProfile);
 
 route.delete("/delete-profile", authenticate, deleteProfile);
+
+export default route;

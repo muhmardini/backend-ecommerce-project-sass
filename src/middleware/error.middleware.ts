@@ -8,6 +8,7 @@ export const errorMiddleware = (err: unknown, _req: Request, res: Response, _nex
             success: false,
             error: err.message,
         })
+        return
     }
 
     if(err instanceof ZodError){
@@ -15,6 +16,7 @@ export const errorMiddleware = (err: unknown, _req: Request, res: Response, _nex
             success: false,
             error: "Validation failed",
         })
+        return
     }
 
     console.error('Unhandled error: ', err)

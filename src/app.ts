@@ -3,6 +3,8 @@ import { timeStamp } from "console";
 import express, { NextFunction } from "express";
 import { success } from "zod";
 import authRoutes from "#features/auth/auth.routes";
+import businessRoutes from "#features/business/business.routes"
+import userRoutes from "#features/users/users.routes"
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "#middleware/error.middleware";
 
@@ -14,6 +16,8 @@ app.use(cookieParser())
 
 
 app.use("/auth", authRoutes);
+app.use("/users", userRoutes)
+app.use("/business", businessRoutes);
 
 
 
