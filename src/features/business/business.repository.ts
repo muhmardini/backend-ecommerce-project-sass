@@ -1,7 +1,7 @@
 import { Business } from "#generated/prisma/client";
 import { prisma } from "#lib/prisma";
 import slugify from "slugify";
-import { BusinessInputs } from "./business.schema";
+import { BusinessInputs, MemberInputs } from "./business.schema";
 
 class BusinessRepository {
   findBusinessByName = (name: string) => {
@@ -24,6 +24,14 @@ class BusinessRepository {
         }),
         links: input.links ?? [],
       },
+      select: {
+        name: true,
+        description: true,
+        location: true,
+        links: true,
+        slug: true,
+        createdAt: true
+      }
     });
   };
   getAllBusinesses = (queries: BusinessInputs.GetAllBusinessesInput) => {
@@ -34,14 +42,21 @@ class BusinessRepository {
       select: {
         name: true,
         description: true,
-        location: true,
-        links: true,
       },
     });
   };
-  getBusiness = (input: BusinessInputs.GetBusiness) => {
+  getBusinessBySlug = (slug: string) => {
     return prisma.business.findUnique({
-      where: { name: input.name },
+      where: { slug: slug },
+      select: {
+        name: true,
+        description: true,
+        location: true,
+        links: true,
+        slug: true,
+        createdAt: true,
+        id: true
+      }
     });
   };
   getBusinesses = async (
@@ -71,8 +86,10 @@ class BusinessRepository {
         description: true,
         location: true,
         links: true,
+        slug: true,
         createdAt: true,
-      },
+        ...(input.role === "CoWorker" ? undefined: {updatedAt: true})
+      }
     });
   };
   getBusinessesCount = async (input: BusinessInputs.GetAllBusinessesInput) => {
@@ -104,6 +121,30 @@ class BusinessRepository {
       where: { name: input.name },
     });
   };
+
+  getBusinessMember = async (memberId: string, businessId: string) => {
+    return await prisma.businessMember.findUnique({
+      where: {
+        userId_businessId: {
+          userId: memberId,
+          businessId: businessId,
+        },
+      },
+      select: {
+        role: true,
+      },
+    });
+  }
+
+  addBusinessMember = async (userId: string, businessId: string, role: MemberInputs.NewMemberBody) => {
+    return await prisma.businessMember.create({
+      data: {
+        userId: userId,
+        businessId: businessId,
+        role: role.role
+      }
+    })
+  }
 }
 
 export const businessRepo = new BusinessRepository();

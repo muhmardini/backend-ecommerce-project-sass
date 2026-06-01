@@ -24,6 +24,7 @@ model User {
     likedProducts LikeProduct[]
     business BusinessMember[]
     points PointRedemption[]
+    verification verificationInfo?
 
     @@map("user")
 }
@@ -73,7 +74,7 @@ model Product {
     description String
     price Float
     image String
-    size Int?
+    size Size?
     colors String?
     stockCount Int?
     status ProductStatus @default(available)
@@ -120,6 +121,26 @@ model Order {
     items OrderItem[]
 
     @@map("orders")
+}
+
+model verificationInfo {
+    id String @id @default(cuid())
+
+    nationalId String
+    fullName String
+    fatherName String
+    motherName String
+    birthdate DateTime
+    birthCity String
+    currentResidence String
+    cardId String
+    status VerificationStatus
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String @unique
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // join tables for relations
@@ -257,4 +278,18 @@ enum BusinessMemberRole {
 enum RedemptionType {
     freeDelivery
     none
+}
+
+enum Size {
+    Small
+    Medium
+    Large
+    XL
+    XXL
+}
+
+enum VerificationStatus {
+    Pending
+    Approved
+    Rejected
 }

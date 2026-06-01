@@ -1,5 +1,6 @@
 import { prisma } from "#lib/prisma";
 import { AuthUser } from "#types/express.d";
+import { email } from "zod";
 import { RegisterInput, LoginInput } from "./auth.schemas";
 
 type AuthInput = RegisterInput | LoginInput;
@@ -11,12 +12,19 @@ class AuthRepository {
     });
   };
 
+  findUserByEmail = (email: string) => {
+    return prisma.user.findUnique({
+      where: {email: email}
+    })
+  }
+
   findUserById = (id: string) => {
     return prisma.user.findUnique({
       where: { id: id },
       select: {
         id: true,
         role: true,
+        verified: true
       },
     });
   };

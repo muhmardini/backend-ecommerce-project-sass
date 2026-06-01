@@ -1,24 +1,37 @@
-import { authenticate } from '#features/auth/auth.middleware';
-import express from 'express'
-import { createBusiness, editBusiness, getBusiness, getAllBusiness, deleteBusiness, myBusinesses } from './business.controller';
+import { authenticate } from "#features/auth/auth.middleware";
+import express from "express";
+import {
+  createBusiness,
+  editBusiness,
+  getBusiness,
+  getAllBusiness,
+  deleteBusiness,
+  myBusinesses,
+  newMember,
+} from "./business.controller";
+import { isOwner } from "./isOwner.middleware";
+import { verify } from "#features/verification/verify.middleware";
 
 const router = express.Router();
 
-
 // Core Endpoints
-router.post('/', authenticate, createBusiness);
+router.post("/", authenticate, verify, createBusiness);
 
-router.get('/:slug', getBusiness);
+router.get("/me", authenticate, myBusinesses);
 
-router.get('/', getAllBusiness)
+router.get("/", getAllBusiness);
 
-router.get('/my-businesses', authenticate, myBusinesses)
+router.get("/:slug", getBusiness);
 
-router.patch('/', authenticate, editBusiness);
+router.patch("/:slug", authenticate, isOwner, editBusiness);
 
-router.delete('/:slug', authenticate, deleteBusiness);
+router.delete("/:slug", authenticate, isOwner, deleteBusiness);
 
 // manage members endpoints
-router.post('/business')
+router.post("/:slug/member", authenticate, isOwner, newMember);
 
-export default router
+router.patch("/:slug/member/:id", authenticate,isOwner, editMember);
+
+router.delete("/:slug/member/:id", authenticate, isOwner, deleteMember);
+
+export default router;

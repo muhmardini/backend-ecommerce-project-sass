@@ -6,6 +6,8 @@ import {
   GetAllBusinessesSchema,
   GetBusinessSchema,
   NewBusinessSchema,
+  NewMemberBodySchema,
+  NewMemberParamsSchema,
 } from "./business.schema";
 import { businessService } from "./business.service";
 import { AppResponse, PaginatedResponse } from "#shared/types";
@@ -14,6 +16,10 @@ import {
   GetPaginateBusinessSchema,
 } from "#features/business/business.schema";
 import { Business } from "#generated/prisma/client";
+import { userInfo } from "node:os";
+import { authRepo } from "#features/auth/auth.repository";
+import { authServices } from "#features/auth/auth.service";
+import { id } from "zod/locales";
 
 const createBusiness = catchAsync(async (req: Request, res: Response) => {
   const input = NewBusinessSchema.parse(req.body);
@@ -32,9 +38,7 @@ const getAllBusiness = catchAsync(async (req: Request, res: Response) => {
   const totalBusinessesCount =
     await businessService.getTotalBusinessCount(queries);
   const pages = Math.ceil(totalBusinessesCount / queries.limit);
-  const response: PaginatedResponse<
-    Pick<Business, "name" | "description" | "location" | "links">
-  > = {
+  const response: PaginatedResponse<(typeof businesses)[number]> = {
     success: true,
     data: businesses,
     pagination: {
@@ -61,9 +65,7 @@ const myBusinesses = catchAsync(async (req: Request, res: Response) => {
   const totalBusinessesCount =
     await businessService.getUserTotalBusinessesCount(input, user.id);
   const pages = Math.ceil(totalBusinessesCount / queries.limit);
-  const response: PaginatedResponse<
-    Pick<Business, "name" | "description" | "location" | "links" | "createdAt">
-  > = {
+  const response: PaginatedResponse<(typeof businesses)[number]> = {
     success: true,
     data: businesses,
     pagination: {
@@ -80,7 +82,7 @@ const myBusinesses = catchAsync(async (req: Request, res: Response) => {
 
 const getBusiness = catchAsync(async (req: Request, res: Response) => {
   const input = GetBusinessSchema.parse(req.params);
-  const business = await businessService.getBusiness(input);
+  const business = await businessService.getBusiness(input.slug);
   const response: AppResponse<typeof business> = {
     success: true,
     data: business,
@@ -108,6 +110,21 @@ const deleteBusiness = catchAsync(async (req: Request, res: Response) => {
   res.status(204).send(response);
 });
 
+// Manage Members Controllers
+const newMember = catchAsync(async (req: Request, res: Response) => {
+  const Ids = NewMemberParamsSchema.parse(req.params);
+  const role = NewMemberBodySchema.parse(req.body);
+  const input = {
+    ...Ids,
+  };
+  const addNewMember = await businessService.addNewMember(input, role);
+  const response: AppResponse<typeof addNewMember> = {
+    success: true,
+    data: addNewMember,
+  };
+  res.status(201).json(response);
+});
+
 export {
   createBusiness,
   getAllBusiness,
@@ -115,4 +132,5 @@ export {
   myBusinesses,
   editBusiness,
   deleteBusiness,
+  newMember,
 };
