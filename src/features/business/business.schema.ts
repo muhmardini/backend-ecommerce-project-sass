@@ -46,7 +46,27 @@ export const NewMemberBodySchema = z.object({
   role: z.enum(["Owner", "CoWorker"]),
 });
 
+export const EditMemberParamsSchema = NewMemberParamsSchema
+
+export const EditMemberBodySchema = NewMemberBodySchema
+
+export const GetMembersSchema = z.object({
+  slug: z.string()
+})
+export const GetMembersQuerySchema = GetAllBusinessesSchema
+
+export const DeleteMemberSchema = z.object({
+  slug: z.string(),
+  userId : z.string(),
+})
 export namespace MemberInputs {
   export type NewMemberParams = z.infer<typeof NewMemberParamsSchema>;
   export type NewMemberBody = z.infer<typeof NewMemberBodySchema>;
+  export type NewMember = z.infer<typeof NewMemberBodySchema & typeof NewMemberParamsSchema>
+  export type EditMemberParams = z.infer<typeof EditMemberParamsSchema>;
+  export type EditMemberBody = z.infer<typeof EditMemberBodySchema>;
+  export type EditMember = z.infer<typeof EditMemberBodySchema & typeof EditMemberParamsSchema>
+  export type GetMembers = z.infer<typeof GetMembersSchema>
+  export type GetMembersQuery = z.infer<typeof GetMembersQuerySchema>
+  export type DeleteMember = z.infer<typeof DeleteMemberSchema>
 }

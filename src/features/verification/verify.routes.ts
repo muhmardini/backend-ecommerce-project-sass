@@ -1,9 +1,10 @@
+import { authenticate } from '#features/auth/auth.middleware';
 import express from 'express'
+import { myRequests, verificationRequest } from './verify.controller';
 
 const route = express.Router();
 
-route.get('/admin/verification/users')
+route.post('/', authenticate, verificationRequest)
 
-route.get('/admin/verification/requests')
+route.get('/me', authenticate, myRequests)
 
-route.post('/admin/verify/approve-reject')

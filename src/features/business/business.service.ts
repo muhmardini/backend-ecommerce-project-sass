@@ -92,9 +92,9 @@ class BusinessService {
     }
     await businessRepo.deleteBusiness(input);
   };
-  addNewMember = async (input: MemberInputs.NewMemberParams, role: MemberInputs.NewMemberBody) => {
+  addNewMember = async (input: MemberInputs.NewMember) => {
     const user = await authRepo.findUserById(input.userId)
-    const business = await businessService.getBusiness(input.businessSlug);
+    const business = await businessService.getBusinessBySlug(input.businessSlug);
     if(!user) {
       throw Errors.NotFound("User no longer exist")
     }
@@ -102,9 +102,39 @@ class BusinessService {
       throw Errors.NotFound("Business no longer exist")
     }
     
-    const businessMember = await businessRepo.addBusinessMember(input.userId, business.id, role);
+    const businessMember = await businessRepo.addBusinessMember(business.id, input);
     return businessMember;
   };
+  editMember = async (input: MemberInputs.EditMember) => {
+    const user = await authRepo.findUserById(input.userId)
+    const business = await businessService.getBusinessBySlug(input.businessSlug)
+    if(!user) {
+      throw Errors.NotFound("User no longer exist")
+    }
+    if(!business) {
+      throw Errors.NotFound("Business no longer exist")
+    }
+    const editedMember = await businessRepo.editBusinessMember(business.id, input);
+    return editedMember
+  }
+  getMembers = async (input: MemberInputs.GetMembers, queries: MemberInputs.GetMembersQuery) => {
+    const members = await businessRepo.getBusinessMembers(input, queries);
+    return members
+  }
+  getMembersCount = async (input: MemberInputs.GetMembers) => {
+    const membersCount = await businessRepo.getBusinessMembersCount(input)
+    return membersCount
+  }
+  deleteMember = async (input: MemberInputs.DeleteMember) => {
+    const business = await businessRepo.findBusinessBySlug(input.slug)
+    if(!business){
+      throw Errors.NotFound("Business no longer exist")
+    }
+    const member = await businessRepo.getBusinessMember(input.userId, business.id)
+    if(!member) {
+      Errors.NotFound("Member no longer exist")
+    }
+  }
 }
 
 export const businessService = new BusinessService();

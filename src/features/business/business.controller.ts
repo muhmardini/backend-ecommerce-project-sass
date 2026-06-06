@@ -1,10 +1,15 @@
 import { catchAsync } from "#shared/catchAsync";
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import {
   DeleteBusinessSchema,
+  DeleteMemberSchema,
   EditBusinessSchema,
+  EditMemberBodySchema,
+  EditMemberParamsSchema,
   GetAllBusinessesSchema,
   GetBusinessSchema,
+  GetMembersQuerySchema,
+  GetMembersSchema,
   NewBusinessSchema,
   NewMemberBodySchema,
   NewMemberParamsSchema,
@@ -38,7 +43,7 @@ const getAllBusiness = catchAsync(async (req: Request, res: Response) => {
   const totalBusinessesCount =
     await businessService.getTotalBusinessCount(queries);
   const pages = Math.ceil(totalBusinessesCount / queries.limit);
-  const response: PaginatedResponse<(typeof businesses)[number]> = {
+  const response: PaginatedResponse<typeof businesses> = {
     success: true,
     data: businesses,
     pagination: {
@@ -65,7 +70,7 @@ const myBusinesses = catchAsync(async (req: Request, res: Response) => {
   const totalBusinessesCount =
     await businessService.getUserTotalBusinessesCount(input, user.id);
   const pages = Math.ceil(totalBusinessesCount / queries.limit);
-  const response: PaginatedResponse<(typeof businesses)[number]> = {
+  const response: PaginatedResponse<typeof businesses> = {
     success: true,
     data: businesses,
     pagination: {
@@ -110,20 +115,68 @@ const deleteBusiness = catchAsync(async (req: Request, res: Response) => {
   res.status(204).send(response);
 });
 
-// Manage Members Controllers
+// ----------------------------------------- Manage Members Controllers --------------------------------------------------------
+
 const newMember = catchAsync(async (req: Request, res: Response) => {
   const Ids = NewMemberParamsSchema.parse(req.params);
   const role = NewMemberBodySchema.parse(req.body);
   const input = {
     ...Ids,
+    ...role,
   };
-  const addNewMember = await businessService.addNewMember(input, role);
+  const addNewMember = await businessService.addNewMember(input);
   const response: AppResponse<typeof addNewMember> = {
     success: true,
     data: addNewMember,
   };
   res.status(201).json(response);
 });
+
+const editMember = catchAsync(async (req: Request, res: Response) => {
+  const role = EditMemberBodySchema.parse(req.body);
+  const Ids = EditMemberParamsSchema.parse(req.params);
+  const input = {
+    ...Ids,
+    ...role,
+  };
+  const editedMember = await businessService.editMember(input);
+  const response: AppResponse<typeof editedMember> = {
+    success: true,
+    data: editedMember,
+  };
+  res.status(201).json(response);
+});
+
+const getMembers = catchAsync(async (req: Request, res: Response) => {
+  const input = GetMembersSchema.parse(req.params);
+  const queries = GetMembersQuerySchema.parse(req.query);
+  const members = await businessService.getMembers(input, queries);
+  const membersCount = await businessService.getMembersCount(input);
+  const pages = Math.ceil(membersCount / queries.limit);
+  const response: PaginatedResponse<typeof members> = {
+    success: true,
+    data: members,
+    pagination: {
+      page: queries.page,
+      limit: queries.limit,
+      total: membersCount,
+      totalPages: pages,
+      hasNextPage: queries.page < pages,
+      hasPrevPage: queries.page > 1,
+    },
+  };
+  res.status(200).json(response)
+});
+
+const deleteMember = catchAsync(async (req: Request, res: Response) => {
+  const input = DeleteMemberSchema.parse(req.params)
+  await businessService.deleteMember(input)
+  const response: AppResponse<void> = {
+    success: true,
+    message: "Member deleted successfully"
+  }
+  res.status(200).send()
+})
 
 export {
   createBusiness,
@@ -133,4 +186,7 @@ export {
   editBusiness,
   deleteBusiness,
   newMember,
+  editMember,
+  getMembers,
+  deleteMember
 };

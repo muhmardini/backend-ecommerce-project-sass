@@ -136,12 +136,58 @@ class BusinessRepository {
     });
   }
 
-  addBusinessMember = async (userId: string, businessId: string, role: MemberInputs.NewMemberBody) => {
+  addBusinessMember = async (businessId: string, input: MemberInputs.NewMember) => {
     return await prisma.businessMember.create({
       data: {
-        userId: userId,
+        userId: input.userId,
         businessId: businessId,
-        role: role.role
+        role: input.role
+      }
+    })
+  }
+
+  editBusinessMember = async (businessId: string, input: MemberInputs.EditMember) => {
+    return await prisma.businessMember.update({
+      where: {
+        userId_businessId: {
+          userId: input.userId,
+          businessId: businessId
+        }
+      },
+      data: {
+        role: input.role
+      }
+    })
+  }
+
+  getBusinessMembers = async (input: MemberInputs.GetMembers, queries: MemberInputs.GetMembersQuery) => {
+    const skip = (queries.page - 1) * queries.limit
+    return await prisma.businessMember.findMany({
+      where: {
+        business: {
+          slug: input.slug
+        }
+      },
+      select: {
+        role: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
+      skip,
+      take: queries.limit
+    })
+  }
+  getBusinessMembersCount = async (input: MemberInputs.GetMembers) =>{
+    return prisma.businessMember.count({
+      where: {
+        business: {
+          slug: input.slug
+        }
       }
     })
   }

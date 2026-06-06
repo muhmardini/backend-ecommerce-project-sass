@@ -8,6 +8,9 @@ import {
   deleteBusiness,
   myBusinesses,
   newMember,
+  editMember,
+  getMembers,
+  deleteMember,
 } from "./business.controller";
 import { isOwner } from "./isOwner.middleware";
 import { verify } from "#features/verification/verify.middleware";
@@ -28,10 +31,12 @@ router.patch("/:slug", authenticate, isOwner, editBusiness);
 router.delete("/:slug", authenticate, isOwner, deleteBusiness);
 
 // manage members endpoints
-router.post("/:slug/member", authenticate, isOwner, newMember);
+router.post("/:slug/members", authenticate, isOwner, newMember);
 
-router.patch("/:slug/member/:id", authenticate,isOwner, editMember);
+router.patch("/:slug/members/:id", authenticate, isOwner, editMember);
 
-router.delete("/:slug/member/:id", authenticate, isOwner, deleteMember);
+router.get("/:slug/members", authenticate, isOwner, getMembers);
+
+router.delete("/:slug/members/:id", authenticate, isOwner, deleteMember);
 
 export default router;
