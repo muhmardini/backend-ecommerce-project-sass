@@ -2,6 +2,7 @@ import { Business } from "#generated/prisma/client";
 import { prisma } from "#lib/prisma";
 import slugify from "slugify";
 import { BusinessInputs, MemberInputs } from "./business.schema";
+import { AuthUser } from "#types/express.d";
 
 class BusinessRepository {
   findBusinessByName = (name: string) => {
@@ -14,8 +15,8 @@ class BusinessRepository {
       where: { slug: slug },
     });
   };
-  createBusiness = (input: BusinessInputs.CreateBusiness) => {
-    return prisma.business.create({
+  createBusiness = async (input: BusinessInputs.CreateBusiness) => {
+    return await prisma.business.create({
       data: {
         ...input,
         slug: slugify(input.name, {
@@ -30,20 +31,24 @@ class BusinessRepository {
         location: true,
         links: true,
         slug: true,
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
   };
-  getAllBusinesses = (queries: BusinessInputs.GetAllBusinessesInput) => {
-    const skip = (queries.page - 1) * queries.limit;
-    return prisma.business.findMany({
+  getAllBusinesses = async (input: BusinessInputs.GetAllBusinessesInput) => {
+    const skip = (input.query.page - 1) * input.query.limit;
+    const [businesses, totalBusinesses] = await prisma.$transaction([
+      prisma.business.findMany({
       skip,
-      take: queries.limit,
+      take: input.query.limit,
       select: {
         name: true,
         description: true,
       },
-    });
+    }),
+    prisma.business.count()
+    ]) 
+    return {businesses, totalBusinesses}
   };
   getBusinessBySlug = (slug: string) => {
     return prisma.business.findUnique({
@@ -55,32 +60,29 @@ class BusinessRepository {
         links: true,
         slug: true,
         createdAt: true,
-        id: true
-      }
+        id: true,
+      },
     });
   };
   getBusinesses = async (
-    id: string,
-    input: BusinessInputs.GetBusinesses,
-    queries: BusinessInputs.GetPaginateBusiness,
-  ): Promise<
-    Pick<
-      Business,
-      "name" | "description" | "location" | "links" | "createdAt"
-    >[]
-  > => {
-    const skip = (queries.page - 1) * queries.limit;
-    return await prisma.business.findMany({
+    input: BusinessInputs.GetAllBusinessesInput & AuthUser,
+  ): Promise<{
+    businesses: Pick<Business,"name" | "description" | "location" | "links" | "createdAt">[],
+    totalBusinesses: number
+  }> => {
+    const skip = (input.query.page - 1) * input.query.limit;
+    const [businesses, totalBusinesses] = await prisma.$transaction([
+  prisma.business.findMany({
       where: {
         businessTeam: {
           some: {
-            userId: id,
-            ...(input.role && { role: input.role }),
+            userId: input.id,
+            ...(input.query.role && { role: input.query.role }),
           },
         },
       },
       skip,
-      take: queries.limit,
+      take: input.query.limit,
       select: {
         name: true,
         description: true,
@@ -88,9 +90,14 @@ class BusinessRepository {
         links: true,
         slug: true,
         createdAt: true,
-        ...(input.role === "CoWorker" ? undefined: {updatedAt: true})
-      }
-    });
+        ...(input.query.role === "CoWorker" ? undefined : { updatedAt: true }),
+      },
+    }),
+    prisma.business.count({
+      where: {id: input.id}
+    })
+    ])
+    return {businesses, totalBusinesses}
   };
   getBusinessesCount = async (input: BusinessInputs.GetAllBusinessesInput) => {
     return await prisma.business.count();
@@ -134,39 +141,45 @@ class BusinessRepository {
         role: true,
       },
     });
-  }
+  };
 
-  addBusinessMember = async (businessId: string, input: MemberInputs.NewMember) => {
+  addBusinessMember = async (
+    businessId: string,
+    input: MemberInputs.NewMember,
+  ) => {
     return await prisma.businessMember.create({
       data: {
-        userId: input.userId,
+        userId: input.params.userId,
         businessId: businessId,
-        role: input.role
-      }
-    })
-  }
+        role: input.body.role,
+      },
+    });
+  };
 
-  editBusinessMember = async (businessId: string, input: MemberInputs.EditMember) => {
+  editBusinessMember = async (
+    businessId: string,
+    input: MemberInputs.EditMember,
+  ) => {
     return await prisma.businessMember.update({
       where: {
         userId_businessId: {
-          userId: input.userId,
-          businessId: businessId
-        }
+          userId: input.params.userId,
+          businessId: businessId,
+        },
       },
       data: {
-        role: input.role
-      }
-    })
-  }
+        role: input.body.role,
+      },
+    });
+  };
 
-  getBusinessMembers = async (input: MemberInputs.GetMembers, queries: MemberInputs.GetMembersQuery) => {
-    const skip = (queries.page - 1) * queries.limit
+  getBusinessMembers = async (input: MemberInputs.GetMembers) => {
+    const skip = (input.query.page - 1) * input.query.limit;
     return await prisma.businessMember.findMany({
       where: {
         business: {
-          slug: input.slug
-        }
+          slug: input.params.slug,
+        },
       },
       select: {
         role: true,
@@ -174,23 +187,24 @@ class BusinessRepository {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
+            email: true,
+          },
+        },
       },
       skip,
-      take: queries.limit
-    })
-  }
-  getBusinessMembersCount = async (input: MemberInputs.GetMembers) =>{
+      take: input.query.limit,
+    });
+  };
+  getBusinessMembersCount = async (input: MemberInputs.GetMembers) => {
     return prisma.businessMember.count({
       where: {
         business: {
-          slug: input.slug
-        }
-      }
-    })
-  }
+          slug: input.params.slug,
+        },
+      },
+      // make it in an [] transaction with the getBusinessMembers above
+    });
+  };
 }
 
 export const businessRepo = new BusinessRepository();

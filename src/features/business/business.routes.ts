@@ -13,12 +13,13 @@ import {
   deleteMember,
 } from "./business.controller";
 import { isOwner } from "./isOwner.middleware";
-import { verify } from "#features/verification/verify.middleware";
+import { isVerified } from "#features/verification/verify.middleware";
+import { createProduct } from "#features/products/product.controller";
 
 const router = express.Router();
 
 // Core Endpoints
-router.post("/", authenticate, verify, createBusiness);
+router.post("/", authenticate, isVerified, createBusiness);
 
 router.get("/me", authenticate, myBusinesses);
 
@@ -38,5 +39,11 @@ router.patch("/:slug/members/:id", authenticate, isOwner, editMember);
 router.get("/:slug/members", authenticate, isOwner, getMembers);
 
 router.delete("/:slug/members/:id", authenticate, isOwner, deleteMember);
+
+// adding a route to get all products created by this business
+
+router.post("/:slug/products", authenticate, isOwner, createProduct);
+
+router.get("/:slug/products", authenticate, isOwner, getBusinessProducts);
 
 export default router;

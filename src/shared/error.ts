@@ -22,4 +22,5 @@ export const Errors = {
     Conflict: (msg = "Resource already exist") => new AppError(msg, 409, true, "CONFLICT"),
     Validation: (msg = "Validation failed") => new AppError(msg, 422, true, "VALIDATION_ERROR"),
     Internal: (msg = "Internal server error") => new AppError(msg, 500, false, "INTERNAL_ERROR"),
+    BadRequest: (msg = "Missing some information") => new AppError(msg, 400, false, "BAD_REQUEST")
 }

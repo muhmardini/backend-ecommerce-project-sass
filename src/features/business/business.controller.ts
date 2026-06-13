@@ -1,30 +1,18 @@
 import { catchAsync } from "#shared/catchAsync";
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import {
   DeleteBusinessSchema,
   DeleteMemberSchema,
   EditBusinessSchema,
-  EditMemberBodySchema,
-  EditMemberParamsSchema,
+  EditMemberSchema,
   GetAllBusinessesSchema,
-  GetBusinessSchema,
-  GetMembersQuerySchema,
   GetMembersSchema,
   NewBusinessSchema,
-  NewMemberBodySchema,
-  NewMemberParamsSchema,
+  NewMemberSchema,
 } from "./business.schema";
 import { businessService } from "./business.service";
 import { AppResponse, PaginatedResponse } from "#shared/types";
-import {
-  GetUserBusinessesSchema,
-  GetPaginateBusinessSchema,
-} from "#features/business/business.schema";
-import { Business } from "#generated/prisma/client";
-import { userInfo } from "node:os";
-import { authRepo } from "#features/auth/auth.repository";
-import { authServices } from "#features/auth/auth.service";
-import { id } from "zod/locales";
+import { ParamsSlugSchema } from "#shared/schemas/Schemas";
 
 const createBusiness = catchAsync(async (req: Request, res: Response) => {
   const input = NewBusinessSchema.parse(req.body);
@@ -38,55 +26,52 @@ const createBusiness = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllBusiness = catchAsync(async (req: Request, res: Response) => {
-  const queries = GetAllBusinessesSchema.parse(req.query);
-  const businesses = await businessService.getBusinesses(queries);
-  const totalBusinessesCount =
-    await businessService.getTotalBusinessCount(queries);
-  const pages = Math.ceil(totalBusinessesCount / queries.limit);
+  const input = GetAllBusinessesSchema.parse(req.query);
+  const { businesses, totalBusinesses } =
+    await businessService.getBusinesses(input);
+  const pages = Math.ceil(totalBusinesses / input.query.limit);
   const response: PaginatedResponse<typeof businesses> = {
     success: true,
     data: businesses,
     pagination: {
-      page: queries.page,
-      limit: queries.limit,
-      total: totalBusinessesCount,
+      page: input.query.page,
+      limit: input.query.limit,
+      total: totalBusinesses,
       totalPages: pages,
-      hasNextPage: queries.page < pages,
-      hasPrevPage: queries.page > 1,
+      hasNextPage: input.query.page < pages,
+      hasPrevPage: input.query.page > 1,
     },
   };
   res.status(200).json(response);
 });
 
 const myBusinesses = catchAsync(async (req: Request, res: Response) => {
-  const input = GetUserBusinessesSchema.parse(req.params);
-  const queries = GetPaginateBusinessSchema.parse(req.query);
+  const queries = GetAllBusinessesSchema.parse(req.query);
   const user = req.user!;
-  const businesses = await businessService.getMyBusinesses(
-    user.id,
-    input,
-    queries,
-  );
-  const totalBusinessesCount =
-    await businessService.getUserTotalBusinessesCount(input, user.id);
-  const pages = Math.ceil(totalBusinessesCount / queries.limit);
+  const input = {
+    ...queries,
+    ...user,
+  };
+  const { businesses, totalBusinesses } =
+    await businessService.getMyBusinesses(input);
+  const pages = Math.ceil(totalBusinesses / input.query.limit);
   const response: PaginatedResponse<typeof businesses> = {
     success: true,
     data: businesses,
     pagination: {
-      page: queries.page,
-      limit: queries.limit,
-      total: totalBusinessesCount,
+      page: input.query.page,
+      limit: input.query.limit,
+      total: totalBusinesses,
       totalPages: pages,
-      hasNextPage: queries.page < pages,
-      hasPrevPage: queries.page > 1,
+      hasNextPage: input.query.page < pages,
+      hasPrevPage: input.query.page > 1,
     },
   };
   res.status(200).json(response);
 });
 
 const getBusiness = catchAsync(async (req: Request, res: Response) => {
-  const input = GetBusinessSchema.parse(req.params);
+  const input = ParamsSlugSchema.parse(req.params);
   const business = await businessService.getBusiness(input.slug);
   const response: AppResponse<typeof business> = {
     success: true,
@@ -118,12 +103,10 @@ const deleteBusiness = catchAsync(async (req: Request, res: Response) => {
 // ----------------------------------------- Manage Members Controllers --------------------------------------------------------
 
 const newMember = catchAsync(async (req: Request, res: Response) => {
-  const Ids = NewMemberParamsSchema.parse(req.params);
-  const role = NewMemberBodySchema.parse(req.body);
-  const input = {
-    ...Ids,
-    ...role,
-  };
+  const input = NewMemberSchema.parse({
+    params: req.params,
+    body: req.body,
+  });
   const addNewMember = await businessService.addNewMember(input);
   const response: AppResponse<typeof addNewMember> = {
     success: true,
@@ -133,12 +116,10 @@ const newMember = catchAsync(async (req: Request, res: Response) => {
 });
 
 const editMember = catchAsync(async (req: Request, res: Response) => {
-  const role = EditMemberBodySchema.parse(req.body);
-  const Ids = EditMemberParamsSchema.parse(req.params);
-  const input = {
-    ...Ids,
-    ...role,
-  };
+  const input = EditMemberSchema.parse({
+    params: req.params,
+    body: req.body,
+  });
   const editedMember = await businessService.editMember(input);
   const response: AppResponse<typeof editedMember> = {
     success: true,
@@ -148,35 +129,37 @@ const editMember = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMembers = catchAsync(async (req: Request, res: Response) => {
-  const input = GetMembersSchema.parse(req.params);
-  const queries = GetMembersQuerySchema.parse(req.query);
-  const members = await businessService.getMembers(input, queries);
+  const input = GetMembersSchema.parse({
+    query: req.query,
+    params: req.params,
+  });
+  const members = await businessService.getMembers(input);
   const membersCount = await businessService.getMembersCount(input);
-  const pages = Math.ceil(membersCount / queries.limit);
+  const pages = Math.ceil(membersCount / input.query.limit);
   const response: PaginatedResponse<typeof members> = {
     success: true,
     data: members,
     pagination: {
-      page: queries.page,
-      limit: queries.limit,
+      page: input.query.page,
+      limit: input.query.limit,
       total: membersCount,
       totalPages: pages,
-      hasNextPage: queries.page < pages,
-      hasPrevPage: queries.page > 1,
+      hasNextPage: input.query.page < pages,
+      hasPrevPage: input.query.page > 1,
     },
   };
-  res.status(200).json(response)
+  res.status(200).json(response);
 });
 
 const deleteMember = catchAsync(async (req: Request, res: Response) => {
-  const input = DeleteMemberSchema.parse(req.params)
-  await businessService.deleteMember(input)
+  const input = DeleteMemberSchema.parse(req.params);
+  await businessService.deleteMember(input);
   const response: AppResponse<void> = {
     success: true,
-    message: "Member deleted successfully"
-  }
-  res.status(200).send()
-})
+    message: "Member deleted successfully",
+  };
+  res.status(200).send(response);
+});
 
 export {
   createBusiness,
@@ -188,5 +171,5 @@ export {
   newMember,
   editMember,
   getMembers,
-  deleteMember
+  deleteMember,
 };
