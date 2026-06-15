@@ -12,7 +12,7 @@ import {
 } from "./business.schema";
 import { businessService } from "./business.service";
 import { AppResponse, PaginatedResponse } from "#shared/types";
-import { ParamsSlugSchema } from "#shared/schemas/Schemas";
+import { ParamsSlugSchema } from "#shared/Schemas";
 
 const createBusiness = catchAsync(async (req: Request, res: Response) => {
   const input = NewBusinessSchema.parse(req.body);

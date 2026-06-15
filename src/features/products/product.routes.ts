@@ -1,8 +1,7 @@
 import { authenticate } from '#features/auth/auth.middleware';
 import { isOwner } from '#features/business/isOwner.middleware';
-import { isVerified } from '#features/verification/verify.middleware';
-import { upload } from '#middleware/uploadImage';
 import express from 'express'
+import { deleteProduct, editProduct, getAllProducts, getProduct, likeProduct, unLikeProduct } from './product.controller';
 
 
 const route = express.Router();

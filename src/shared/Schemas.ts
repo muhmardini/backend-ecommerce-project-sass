@@ -16,3 +16,6 @@ export const QueriesSchema = z.object({
 export const BusinessMemberRoleSchema = z.object({
   role: z.enum(["Owner", "CoWorker"]),
 });
+
+
+export type QueryInput = z.infer<typeof QueriesSchema>

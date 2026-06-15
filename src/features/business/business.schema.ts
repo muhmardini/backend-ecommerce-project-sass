@@ -1,4 +1,4 @@
-import { ParamsSlugSchema, ParamsUserIdSchema, QueriesSchema, BusinessMemberRoleSchema } from "#shared/schemas/Schemas";
+import { ParamsSlugSchema, ParamsUserIdSchema, QueriesSchema, BusinessMemberRoleSchema } from "#shared/Schemas";
 import { z } from "zod";
 
 export const NewBusinessSchema = z.object({

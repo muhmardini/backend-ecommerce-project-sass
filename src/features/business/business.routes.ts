@@ -14,7 +14,7 @@ import {
 } from "./business.controller";
 import { isOwner } from "./isOwner.middleware";
 import { isVerified } from "#features/verification/verify.middleware";
-import { createProduct } from "#features/products/product.controller";
+import { createProduct, getBusinessProducts } from "#features/products/product.controller";
 
 const router = express.Router();
 
@@ -44,6 +44,6 @@ router.delete("/:slug/members/:id", authenticate, isOwner, deleteMember);
 
 router.post("/:slug/products", authenticate, isOwner, createProduct);
 
-router.get("/:slug/products", authenticate, isOwner, getBusinessProducts);
+router.get("/:slug/products", authenticate, getBusinessProducts);
 
 export default router;
