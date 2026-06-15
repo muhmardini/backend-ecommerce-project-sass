@@ -1,8 +1,10 @@
 import { businessRepo } from "#features/business/business.repository";
+import { userRepo } from "#features/users/user.repository";
 import { imageService } from "#shared/cloudinary/image.service";
 import { Errors } from "#shared/error";
 import { QueryInput } from "#shared/Schemas";
 import { AuthUser } from "#types/express.d";
+import { relative } from "node:path";
 import { productRepo } from "./product.repository";
 import {
   CreateProductInput,
@@ -10,6 +12,7 @@ import {
   EditProductInput,
   GetProductByIdInput,
   GetProductInput,
+  GetUserLikedProductsInput,
   LikeProductInput,
 } from "./product.schema";
 
@@ -84,6 +87,15 @@ class ProductServices {
       throw Errors.NotFound("Product is no longer exist");
     }
     await productRepo.unlikeProduct(input)
+  }
+  getLikedProducts = async (input: GetUserLikedProductsInput) => {
+    const user = userRepo.findProfile(input.user.userId)
+    if(!user) {
+      throw Errors.NotFound("User no longer exist")
+    }
+    const {likedProducts, totalLikedProducts} = await productRepo.getLikedProducts(input)
+    const totalPages = Math.ceil(totalLikedProducts / input.query.limit)
+    return {likedProducts, totalLikedProducts, totalPages}
   }
   deleteProduct = async (input: DeleteProductInput) => {
     const product = productRepo.getProductById(input);

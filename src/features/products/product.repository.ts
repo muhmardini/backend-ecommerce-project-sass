@@ -2,7 +2,7 @@ import { prisma } from "#lib/prisma";
 import { UploadedImage } from "#shared/cloudinary/images.types";
 import { QueryInput } from "#shared/Schemas";
 import { AuthUser } from "#types/express.d";
-import { CreateProductInput, DeleteProductInput, EditProductInput, GetProductByIdInput, GetProductInput, LikeProductInput } from "./product.schema";
+import { CreateProductInput, DeleteProductInput, EditProductInput, GetProductByIdInput, GetProductInput, GetUserLikedProductsInput, LikeProductInput } from "./product.schema";
 
 
 class ProductRepository {
@@ -102,6 +102,20 @@ class ProductRepository {
         await prisma.likeProduct.delete({
             where: {id: input.params.productId, userId: input.userId}
         })
+    }
+    getLikedProducts = async (input: GetUserLikedProductsInput) => {
+        const skip = (input.query.page - 1) * input.query.limit
+        const [likedProducts, totalLikedProducts] = await prisma.$transaction([
+            prisma.likeProduct.findMany({
+                where: {userId: input.user.userId},
+                skip,
+                take: input.query.limit
+            }),
+            prisma.likeProduct.count({
+                where: {id: input.user.userId}
+            })
+        ])
+        return {likedProducts, totalLikedProducts}
     }
     deleteProduct = async (input: DeleteProductInput) => {
         await prisma.product.delete({

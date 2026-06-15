@@ -1,8 +1,11 @@
 import { catchAsync } from "#shared/catchAsync";
 import { Request, Response } from "express";
 import { userServices } from "./user.service";
-import { AppResponse } from "#shared/types";
+import { AppResponse, PaginatedResponse } from "#shared/types";
 import { EditProfileSchema } from "./user.schema.ts";
+import { productServices } from "#features/products/product.service";
+import { GetUserLikedProducts } from "#features/products/product.schema";
+import { LikeProduct } from "#generated/prisma/client";
 
 const myProfile = catchAsync(async (req: Request, res: Response) => {
   const user = req.user!;
@@ -37,4 +40,25 @@ const deleteProfile = catchAsync(async (req: Request, res: Response) => {
   res.status(204).json(response);
 });
 
-export { myProfile, editProfile, deleteProfile };
+const likedProducts = catchAsync(async (req: Request, res:Response) => {
+  const input = GetUserLikedProducts.parse({
+    query: req.query,
+    user: req.user!
+  })
+  const {likedProducts, totalLikedProducts, totalPages} = await productServices.getLikedProducts(input)
+  const response: PaginatedResponse<typeof likedProducts> = {
+    success: true,
+    data: likedProducts,
+    pagination: {
+      page: input.query.page,
+      limit: input.query.limit,
+      total: totalLikedProducts,
+      totalPages,
+      hasNextPage: input.query.page < totalPages,
+      hasPrevPage: input.query.page > 1,
+    }
+  }
+  res.status(200).json(response)
+})
+
+export { myProfile, editProfile, deleteProfile, likedProducts };

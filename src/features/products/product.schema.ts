@@ -54,6 +54,14 @@ export const LikeProductSchema = z.object({
     params: GetProductByIdSchema
 })
 
+export const GetUserLikedProducts = z.object({
+  query: QueriesSchema,
+  user: z.object({
+    userId: z.string(),
+    role: z.enum(["Admin", "User"])
+  })
+})
+
 export type CreateProductInput = z.infer<typeof CreateProductSchema> &
   z.infer<typeof CreateProductParamsSchema>;
 export type GetProductInput = z.infer<typeof GetAllBusinessProductsSchema>;
@@ -61,3 +69,4 @@ export type GetProductByIdInput = z.infer<typeof GetProductByIdSchema>;
 export type EditProductInput = z.infer<typeof EditProductSchema>;
 export type LikeProductInput = z.infer<typeof LikeProductSchema>;
 export type DeleteProductInput = z.infer<typeof DeleteProductSchema>;
+export type GetUserLikedProductsInput = z.infer<typeof GetUserLikedProducts>
