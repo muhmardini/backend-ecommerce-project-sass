@@ -5,7 +5,7 @@ import { Errors } from "#shared/error";
 import { Request, Response, NextFunction } from "express";
 
 
-export const verify = catchAsync(async (req:Request, res:Response, next:NextFunction) => {
+export const isVerified = catchAsync(async (req:Request, res:Response, next:NextFunction) => {
     const userPayload = req.user!
     const user = await authRepo.findUserById(userPayload.id)
     if(!user){

@@ -4,6 +4,7 @@ import { Errors } from "#shared/error";
 import { omit } from "zod/mini";
 import { businessRepo } from "./business.repository";
 import { BusinessInputs, MemberInputs } from "./business.schema";
+import { AuthUser } from "#types/express.d";
 
 class BusinessService {
   newBusiness = async (
@@ -18,22 +19,21 @@ class BusinessService {
     return newBusiness;
   };
   getBusinesses = async (
-    queries: BusinessInputs.GetAllBusinessesInput,
-  ): Promise<Pick<Business, "name" | "description">[]> => {
-    const businesses = await businessRepo.getAllBusinesses(queries);
+    input: BusinessInputs.GetAllBusinessesInput,
+  ): Promise<{businesses: Pick<Business, "name" | "description">[], totalBusinesses: number}> => {
+    const businesses = await businessRepo.getAllBusinesses(input);
     return businesses;
   };
   getMyBusinesses = async (
-    id: string,
-    input: BusinessInputs.GetBusinesses,
-    queries: BusinessInputs.GetPaginateBusiness,
-  ): Promise<
-    Pick<
-      Business,
+    input: BusinessInputs.GetAllBusinessesInput & AuthUser,
+  ): Promise<{
+    businesses: Pick<Business,
       "name" | "description" | "location" | "links" | "createdAt"
-    >[]
+    >[],
+  totalBusinesses: number
+}
   > => {
-    const businesses = await businessRepo.getBusinesses(id, input, queries);
+    const businesses = await businessRepo.getBusinesses(input);
     return businesses;
   };
   getUserTotalBusinessesCount = async (
@@ -93,8 +93,8 @@ class BusinessService {
     await businessRepo.deleteBusiness(input);
   };
   addNewMember = async (input: MemberInputs.NewMember) => {
-    const user = await authRepo.findUserById(input.userId)
-    const business = await businessService.getBusinessBySlug(input.businessSlug);
+    const user = await authRepo.findUserById(input.params.userId)
+    const business = await businessService.getBusinessBySlug(input.params.slug);
     if(!user) {
       throw Errors.NotFound("User no longer exist")
     }
@@ -106,8 +106,8 @@ class BusinessService {
     return businessMember;
   };
   editMember = async (input: MemberInputs.EditMember) => {
-    const user = await authRepo.findUserById(input.userId)
-    const business = await businessService.getBusinessBySlug(input.businessSlug)
+    const user = await authRepo.findUserById(input.params.userId)
+    const business = await businessService.getBusinessBySlug(input.params.slug)
     if(!user) {
       throw Errors.NotFound("User no longer exist")
     }
@@ -117,8 +117,8 @@ class BusinessService {
     const editedMember = await businessRepo.editBusinessMember(business.id, input);
     return editedMember
   }
-  getMembers = async (input: MemberInputs.GetMembers, queries: MemberInputs.GetMembersQuery) => {
-    const members = await businessRepo.getBusinessMembers(input, queries);
+  getMembers = async (input: MemberInputs.GetMembers) => {
+    const members = await businessRepo.getBusinessMembers(input);
     return members
   }
   getMembersCount = async (input: MemberInputs.GetMembers) => {

@@ -10,4 +10,7 @@ route.patch("/profile", authenticate, editProfile);
 
 route.delete("/delete-profile", authenticate, deleteProfile);
 
+// add a route for all liked products
+// add a route for all followed businesses
+
 export default route;
