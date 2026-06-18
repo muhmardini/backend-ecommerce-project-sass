@@ -9,6 +9,7 @@ import {
   EditProductSchema,
   GetAllBusinessProductsSchema,
   GetProductByIdSchema,
+  GetUserLikedProducts,
   LikeProductSchema,
 } from "./product.schema";
 import { AppResponse, PaginatedResponse } from "#shared/types";
@@ -131,6 +132,26 @@ const deleteProduct = catchAsync(async (req: Request, res: Response) => {
     message: "Product has been deleted"
   }
 })
+const likedProducts = catchAsync(async (req: Request, res:Response) => {
+  const input = GetUserLikedProducts.parse({
+    query: req.query,
+    user: req.user!
+  })
+  const {likedProducts, totalLikedProducts, totalPages} = await productServices.getLikedProducts(input)
+  const response: PaginatedResponse<typeof likedProducts> = {
+    success: true,
+    data: likedProducts,
+    pagination: {
+      page: input.query.page,
+      limit: input.query.limit,
+      total: totalLikedProducts,
+      totalPages,
+      hasNextPage: input.query.page < totalPages,
+      hasPrevPage: input.query.page > 1,
+    }
+  }
+  res.status(200).json(response)
+})
 
 export {
   createProduct,
@@ -140,5 +161,6 @@ export {
   editProduct,
   likeProduct,
   unLikeProduct,
-  deleteProduct
+  deleteProduct,
+  likedProducts
 };

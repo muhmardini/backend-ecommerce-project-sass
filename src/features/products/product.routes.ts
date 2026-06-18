@@ -1,12 +1,14 @@
 import { authenticate } from '#features/auth/auth.middleware';
 import { isOwner } from '#features/business/isOwner.middleware';
 import express from 'express'
-import { deleteProduct, editProduct, getAllProducts, getProduct, likeProduct, unLikeProduct } from './product.controller';
+import { deleteProduct, editProduct, getAllProducts, getProduct, likedProducts, likeProduct, unLikeProduct } from './product.controller';
 
 
 const route = express.Router();
 
 // route.post('/', authenticate, isVerified, isOwner, upload.array("images", 4), )
+
+route.get("/user/liked", authenticate, likedProducts)
 
 route.get('/', getAllProducts);
 
