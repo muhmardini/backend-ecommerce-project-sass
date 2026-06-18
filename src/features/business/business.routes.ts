@@ -42,8 +42,6 @@ router.delete("/:slug/members/:id", authenticate, isOwner, deleteMember);
 
 // adding a route to get all products created by this business
 
-router.post("/:slug/products", authenticate, isOwner, createProduct);
 
-router.get("/:slug/products", authenticate, getBusinessProducts);
 
 export default router;
