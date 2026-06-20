@@ -3,12 +3,13 @@ import { NextFunction, Request, Response } from "express";
 import { businessRepo } from "./business.repository";
 import { GetBusinessSchema, NewBusinessSchema } from "./business.schema";
 import { Errors } from "#shared/error";
+import { ParamsSlugSchema } from "#shared/Schemas";
 
 
 export const isOwner = catchAsync(async (req:Request, res:Response, next:NextFunction) => {
     const user = req.user!
-    const businessInfo = GetBusinessSchema.parse(req.params)
-    const business = await businessRepo.findBusinessBySlug(businessInfo.slug)
+    const businessSlug = ParamsSlugSchema.parse(req.params)
+    const business = await businessRepo.findBusinessBySlug(businessSlug.slug)
     if(!business){
         throw Errors.NotFound("Business is no longer exist")
     }

@@ -122,6 +122,22 @@ class ProductRepository {
             where: {id: input.productId}
         })
     }
+    findProducts = async (Ids: string[]) => {
+        return await prisma.product.findMany({
+            where: {
+                id: {
+                    in: Ids
+                }
+            },
+            select: {
+                id: true,
+                title: true,
+                price: true,
+                stockCount: true,
+                businessId: true,
+            }
+        })
+    }
 }
 
 
